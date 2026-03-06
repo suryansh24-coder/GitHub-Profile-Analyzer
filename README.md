@@ -33,3 +33,4 @@ A clean, minimal, production-quality web application that analyzes any GitHub pr
 - Profile Info: `https://api.github.com/users/{username}`
 - Repositories Info: `https://api.github.com/users/{username}/repos`
 - Language Statistics: `https://api.github.com/repos/{owner}/{repo}/languages`
+
