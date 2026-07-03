@@ -11,7 +11,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-
+<footer class="footer">
+    <p>
+        Made with ❤️ by
+    <strong>
+        Suryansh Tiwari
+    </strong>
+    </p>
+<p>
+Powered by GitHub REST API
+</p>
+</footer>
 <body>
     <div class="app-container">
         <!-- Theme Toggle -->
@@ -35,37 +45,180 @@
         </button>
 
         <!-- Header -->
-        <header class="header slide-down">
-            <div class="header-title">
-                <svg height="36" viewBox="0 0 16 16" width="36" aria-hidden="true" fill="currentColor">
-                    <path fill-rule="evenodd"
-                        d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
-                    </path>
-                </svg>
+       <header class="hero slide-down">
+            <div class="hero-content">
+
+                <div class="hero-logo">
+
+                    <svg height="70" viewBox="0 0 16 16" width="70" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47
+                            7.59.4.07.55-.17.55-.38
+                            0-.19-.01-.82-.01-1.49
+                            -2.01.37-2.53-.49-2.69-.94
+                            -.09-.23-.48-.94-.82-1.13
+                            -.28-.15-.68-.52-.01-.53
+                            .63-.01 1.08.58 1.23.82
+                            .72 1.21 1.87.87 2.33.66
+                            .07-.52.28-.87.51-1.07
+                            -1.78-.2-3.64-.89-3.64-3.95
+                            0-.87.31-1.59.82-2.15
+                            -.08-.2-.36-1.02.08-2.12
+                            0 0 .67-.21 2.2.82
+                            .64-.18 1.32-.27 2-.27
+                            .68 0 1.36.09 2 .27
+                            1.53-1.04 2.2-.82 2.2-.82
+                            .44 1.1.16 1.92.08 2.12
+                            .51.56.82 1.27.82 2.15
+                            0 3.07-1.87 3.75-3.65 3.95
+                            .29.25.54.73.54 1.48
+                            0 1.07-.01 1.93-.01 2.2
+                            0 .21.15.46.55.38
+                            A8.013 8.013 0 0016 8
+                            c0-4.42-3.58-8-8-8z">
+                        </path>
+                    </svg>
+
+                </div>
+
                 <h1>GitHub Profile Analyzer</h1>
+
+                <p>
+                    Analyze GitHub profiles with beautiful insights,
+                    repository analytics, developer ranking and productivity metrics.
+                </p>
+
+                <div class="hero-badges">
+
+                    <span>🚀 GitHub API</span>
+
+                    <span>📊 Live Analytics</span>
+
+                    <span>⚡ Real-Time</span>
+
+                    <span>🎨 Multi Themes</span>
+
+                </div>
             </div>
-            <p>Generate a comprehensive analytics dashboard for any GitHub profile.</p>
+
         </header>
 
         <!-- Search Box -->
         <main>
-            <section class="search-section fade-in">
-                <form id="search-form" class="search-box">
-                    <input type="text" id="github-input" placeholder="e.g., https://github.com/octocat" required />
-                    <button type="submit" id="analyze-btn">Analyze</button>
-                </form>
-                <div id="error-message" class="error-message hidden"></div>
+           <section class="search-section fade-in">
+
+                <div class="search-wrapper">
+
+                    <form id="search-form" class="search-box">
+
+                        <div class="search-icon">
+                            🔍
+                        </div>
+
+                        <input
+                            type="text"
+                            id="github-input"
+                            placeholder="Enter GitHub username or profile URL..."
+                            required
+                        />
+
+                        <button type="submit" id="analyze-btn">
+
+                            Analyze Profile
+
+                        </button>
+
+                    </form>
+
+                    <button
+                        class="theme-menu-btn"
+                        id="theme-menu-btn">
+
+                        🎨 Themes
+
+                    </button>
+
+                </div>
+
+                <div
+                    id="error-message"
+                    class="error-message hidden">
+                </div>
+
             </section>
 
+            <div id="theme-dropdown" class="theme-dropdown hidden">
+
+                <h3>Select Theme</h3>
+
+                <div class="theme-option" data-theme="default">
+
+                    <span class="dot cyan"></span>
+
+                    Default
+
+                </div>
+
+                <div class="theme-option" data-theme="purple">
+
+                    <span class="dot purple"></span>
+
+                    Purple Galaxy
+
+                </div>
+
+                <div class="theme-option" data-theme="ocean">
+
+                    <span class="dot blue"></span>
+
+                    Ocean Blue
+
+                </div>
+
+                <div class="theme-option" data-theme="neon">
+
+                    <span class="dot green"></span>
+
+                    Neon Green
+
+                </div>
+
+                <div class="theme-option" data-theme="sunset">
+
+                    <span class="dot orange"></span>
+
+                    Sunset Orange
+
+                </div>
+
+                <div class="theme-option" data-theme="mono">
+
+                    <span class="dot black"></span>
+
+                    Black & White
+
+                </div>
+
+            </div>
             <!-- Loading Indicator -->
             <div id="loading" class="loading-spinner hidden">
                 <div class="spinner"></div>
-                <p>Analyzing profile...</p>
+                <h2>
+                    🚀 Generating Developer Dashboard
+                </h2>
+                <p>
+                    Fetching repositories, languages and statistics...
+                </p>
             </div>
 
             <!-- Empty State -->
             <div id="empty-state" class="empty-state">
-                <p>Waiting for a profile to analyze...</p>
+             <h2>
+                👋 Welcome
+            </h2>
+            <p>
+                Search any GitHub profile to generate an AI-powered analytics dashboard with productivity insights, repository statistics, language distribution and developer ranking.
+            </p>
             </div>
 
             <!-- Dashboard -->
@@ -88,14 +241,35 @@
                     </div>
 
                     <!-- Developer Score Card -->
-                    <div class="card score-card slide-up" style="animation-delay: 0.1s;">
-                        <h3>Productivity Score</h3>
-                        <div class="score-display">
-                            <span id="score-value" class="score-value">0</span>
-                            <span class="score-max">/ 100</span>
+                   <div class="card score-card slide-up" style="animation-delay:.1s;">
+                    <h3>Developer Productivity</h3>
+                        <div class="progress-wrapper">
+                            <svg class="progress-ring" width="220" height="220">
+                                <circle
+                                    class="progress-bg"
+                                    cx="110"
+                                    cy="110"
+                                    r="88">
+                                </circle>
+                                <circle
+                                    id="progress-circle"
+                                    class="progress-bar"
+                                    cx="110"
+                                    cy="110"
+                                    r="88">
+                                </circle>
+                            </svg>
+                            <div class="progress-text">
+                                <span id="score-value">0</span>
+                                <small>/100</small>
+                            </div>
                         </div>
-                        <span id="score-label" class="badge">Beginner</span>
-                        <p class="score-calc">Formula: (Stars×2) + (Repos×3) + (Followers×1)</p>
+                        <span id="score-label" class="badge">
+                            Beginner
+                        </span>
+                        <p class="score-calc">
+                            Repository • Stars • Forks • Followers • Activity
+                        </p>
                     </div>
                 </div>
 
@@ -105,8 +279,17 @@
                         <h3>Repository Highlights</h3>
                         <div class="highlight-grid">
                             <div class="highlight-box">
-                                <span class="title">Total Repositories</span>
-                                <span id="total-repos-stat" class="value">0</span>
+                                <div class="highlight-icon">
+                                    ⭐
+                                </div>
+                                <div>
+                                    <span class="title">
+                                        Total Repositories
+                                    </span>
+                                    <span id="total-repos-stat" class="value">
+                                        0
+                                    </span>
+                                </div>
                             </div>
                             <div class="highlight-box">
                                 <span class="title">Total Stars</span>
@@ -114,14 +297,23 @@
                             </div>
                             <div class="highlight-box">
                                 <span class="title">Total Forks</span>
+                                <div class="highlight-icon">
+                                   🍴
+                                </div>
                                 <span id="total-forks-stat" class="value">0</span>
                             </div>
                             <div class="highlight-box span-2">
                                 <span class="title">Most Starred Repo</span>
+                                <div class="highlight-icon">
+                                    🏆
+                                    </div>
                                 <span id="most-starred-stat" class="value text-md">-</span>
                             </div>
                             <div class="highlight-box span-2">
                                 <span class="title">Recently Updated</span>
+                                <div class="highlight-icon">
+                                    ⚡
+                                    </div>
                                 <span id="recent-repo-stat" class="value text-md">-</span>
                             </div>
                         </div>
