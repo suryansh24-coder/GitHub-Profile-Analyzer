@@ -131,44 +131,7 @@ async function analyzeProfile(username) {
             });
         }
 
-        const repoScore=Math.min(userData.public_repos/50,1)*25;
-        const followerScore=Math.min(userData.followers/500,1)*20;
-        const starScore=Math.min(stats.totalStars/500,1)*25;
-        const forkScore=Math.min(stats.totalForks/200,1)*15;
-        const activityScore=Math.min(stats.totalRepos/100,1)*15;
-        const score=Math.min(
-
-        Math.round(
-        repoScore+
-        followerScore+
-        starScore+
-        forkScore+
-        activityScore
-        ),
-        100
-        );
-        let scoreLabel="";
-        let scoreClass="";
-
-        if(score>=90){
-        scoreLabel="Elite";
-        scoreClass="elite";
-        }
-
-        else if(score>=75){
-        scoreLabel="Advanced";
-        scoreClass="advanced";
-        }
-
-        else if(score>=60){
-        scoreLabel="Intermediate";
-        scoreClass="intermediate";
-        }
-
-        else{
-        scoreLabel="Beginner";
-        scoreClass="beginner";
-        }
+        const score = (stats.totalStars * 2) + (userData.public_repos * 3) + (userData.followers * 1);
         let scoreLabel = 'Beginner';
         let scoreClass = 'beginner';
 
@@ -276,10 +239,9 @@ function renderLanguageChart(langData) {
     const labels = Object.keys(langData);
     const data = Object.values(langData);
     if (labels.length === 0) { labels.push('Unknown'); data.push(1); }
-   const bgColors=["#6366F1","#8B5CF6","#3B82F6","#06B6D4","#22C55E","#F97316","#EC4899","#EAB308","#EF4444","#14B8A6"];
+    const bgColors = ['#0969da', '#2da44e', '#8250df', '#bf8700', '#cf222e', '#1f883d', '#ff7b72', '#a371f7'];
     langChartInstance = new Chart(ctx, {
-        type: "doughnut",
-        cutout:"65%",
+        type: 'pie',
         data: { labels, datasets: [{ data, backgroundColor: bgColors }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
     });
@@ -295,12 +257,9 @@ function renderRepoChart(repos) {
     const labels = topRepos.map(r => r.name.length > 15 ? r.name.substring(0, 15) + '...' : r.name);
     const data = topRepos.map(r => r.stargazers_count);
     if (labels.length === 0) { labels.push('No starred repos'); data.push(0); }
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, '#8B5CF6');
-    gradient.addColorStop(1, '#3B82F6');
     repoChartInstance = new Chart(ctx, {
         type: 'bar',
-        data: { labels, datasets: [{ label: 'Stars', data, backgroundColor: gradient, borderRadius: 12 }] },
+        data: { labels, datasets: [{ label: 'Stars', data, backgroundColor: '#0969da', borderRadius: 4 }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 }
@@ -325,87 +284,3 @@ function showError(msg) {
 }
 function hideError() { errorMessage.classList.add('hidden'); }
 function showDashboard() { dashboard.classList.remove('hidden'); }
-
-const themeMenuBtn=document.getElementById("theme-menu-btn");
-const themeDropdown=document.getElementById("theme-dropdown");
-
-themeMenuBtn.addEventListener("click",()=>{
-themeDropdown.classList.toggle("hidden");
-});
-const themeOptions=document.querySelectorAll(".theme-option");
-
-themeOptions.forEach(option=>{
-
-option.addEventListener("click",()=>{
-const selected=option.dataset.theme;
-document.body.classList.remove(
-
-"theme-purple",
-
-"theme-ocean",
-
-"theme-neon",
-
-"theme-sunset",
-
-"theme-mono"
-
-);
-
-switch(selected){
-
-case "purple":
-    document.body.classList.add("theme-purple");
-break;
-
-case "ocean":
-    document.body.classList.add("theme-ocean");
-break;
-
-case "neon":
-    document.body.classList.add("theme-neon");
-break;
-
-case "sunset":
-    document.body.classList.add("theme-sunset");
-break;
-
-case "mono":
-    document.body.classList.add("theme-mono");
-break;
-}
-
-localStorage.setItem("app-theme",selected);
-themeDropdown.classList.add("hidden");
-});
-});
-
-const savedTheme=localStorage.getItem("app-theme");
-if(savedTheme){
-
-const option=document.querySelector(
-`.theme-option[data-theme="${savedTheme}"]`
-);
-
-if(option){
-option.click();
-}
-}
-function animateCounter(
-element,
-value
-){
-
-let current=0;
-const increment=Math.ceil(value/40);
-const timer=setInterval(()=>{
-current+=increment;
-
-if(current>=value){
-current=value;
-clearInterval(timer);
-}
-
-element.textContent=formatNumber(current);
-},20);
-}
