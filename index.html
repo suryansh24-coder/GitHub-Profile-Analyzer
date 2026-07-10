@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Profile Analyzer</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
+    <title>GitHub Profile Analyzer — Deep Dev Insights</title>
+    <meta name="description" content="Generate a comprehensive analytics dashboard for any GitHub profile. Productivity scores, language breakdown, repository insights and more.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <div class="app-container">
+
         <!-- Theme Toggle -->
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
             <svg id="theme-icon-light" class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -37,22 +37,22 @@
         <!-- Header -->
         <header class="header slide-down">
             <div class="header-title">
-                <svg height="36" viewBox="0 0 16 16" width="36" aria-hidden="true" fill="currentColor">
+                <svg class="github-logo" height="38" viewBox="0 0 16 16" width="38" aria-hidden="true" fill="currentColor">
                     <path fill-rule="evenodd"
                         d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
                     </path>
                 </svg>
                 <h1>GitHub Profile Analyzer</h1>
             </div>
-            <p>Generate a comprehensive analytics dashboard for any GitHub profile.</p>
+            <p>Deep developer insights — scores, patterns, language DNA & repository intelligence</p>
         </header>
 
         <!-- Search Box -->
         <main>
             <section class="search-section fade-in">
                 <form id="search-form" class="search-box">
-                    <input type="text" id="github-input" placeholder="e.g., https://github.com/octocat" required />
-                    <button type="submit" id="analyze-btn">Analyze</button>
+                    <input type="text" id="github-input" placeholder="e.g. https://github.com/octocat or username" required />
+                    <button type="submit" id="analyze-btn">⚡ Analyze</button>
                 </form>
                 <div id="error-message" class="error-message hidden"></div>
             </section>
@@ -60,101 +60,178 @@
             <!-- Loading Indicator -->
             <div id="loading" class="loading-spinner hidden">
                 <div class="spinner"></div>
-                <p>Analyzing profile...</p>
+                <p>Fetching developer intelligence…</p>
             </div>
 
             <!-- Empty State -->
             <div id="empty-state" class="empty-state">
-                <p>Waiting for a profile to analyze...</p>
+                <p>🔭 Enter a GitHub username or profile URL above to get started</p>
             </div>
 
-            <!-- Dashboard -->
+            <!-- ════ Dashboard ════ -->
             <div id="dashboard" class="dashboard hidden">
+
+                <!-- Row 1: Profile + Score -->
                 <div class="dashboard-row-top">
+
                     <!-- Profile Card -->
                     <div class="card profile-card slide-up">
-                        <img id="avatar" src="" alt="Avatar" class="avatar" />
+                        <div class="avatar-wrap">
+                            <img id="avatar" src="" alt="Avatar" class="avatar" />
+                            <div class="avatar-ring"></div>
+                        </div>
                         <div class="profile-info">
                             <h2 id="name">Name</h2>
                             <a id="username" href="#" target="_blank" class="username-link">@username</a>
                             <p id="bio" class="bio">User bio</p>
                             <div class="profile-stats">
-                                <div class="stat-item"><strong id="followers">0</strong> Followers</div>
-                                <div class="stat-item"><strong id="following">0</strong> Following</div>
-                                <div class="stat-item"><strong id="public-repos">0</strong> Repos</div>
+                                <div class="stat-pill"><strong id="followers">0</strong>&nbsp;Followers</div>
+                                <div class="stat-pill"><strong id="following">0</strong>&nbsp;Following</div>
+                                <div class="stat-pill"><strong id="public-repos">0</strong>&nbsp;Repos</div>
                             </div>
-                            <p class="join-date">Joined <span id="joined-date">Date</span></p>
+                            <p class="join-date" id="join-date-line">📅 Joined <span id="joined-date">—</span></p>
+                            <p class="location-line" id="location-line" style="display:none">📍 <span id="location-val"></span></p>
+                            <p class="location-line" id="company-line" style="display:none">🏢 <span id="company-val"></span></p>
                         </div>
                     </div>
 
-                    <!-- Developer Score Card -->
-                    <div class="card score-card slide-up" style="animation-delay: 0.1s;">
-                        <h3>Productivity Score</h3>
-                        <div class="score-display">
-                            <span id="score-value" class="score-value">0</span>
-                            <span class="score-max">/ 100</span>
+                    <!-- Score Card -->
+                    <div class="card score-card slide-up" style="animation-delay:0.1s">
+                        <h3><span class="card-icon">🎯</span> Developer Score</h3>
+
+                        <!-- SVG Gauge -->
+                        <div class="score-gauge-wrap">
+                            <svg viewBox="0 0 160 160">
+                                <defs>
+                                    <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%"   stop-color="#7c3aed"/>
+                                        <stop offset="100%" stop-color="#06b6d4"/>
+                                    </linearGradient>
+                                </defs>
+                                <!-- 270° arc: 3/4 circle -->
+                                <circle class="gauge-bg"   cx="80" cy="80" r="65" stroke-dasharray="306 408" stroke-dashoffset="-51"/>
+                                <circle class="gauge-fill" id="gauge-fill" cx="80" cy="80" r="65"
+                                        stroke-dasharray="0 408" stroke-dashoffset="-51"/>
+                            </svg>
+                            <div class="score-center">
+                                <span id="score-value" class="score-value">0</span>
+                                <span class="score-max">/ 100</span>
+                            </div>
                         </div>
-                        <span id="score-label" class="badge">Beginner</span>
-                        <p class="score-calc">Formula: (Stars×2) + (Repos×3) + (Followers×1)</p>
+
+                        <span id="score-label" class="badge beginner">Beginner</span>
+
+                        <!-- Score Breakdown -->
+                        <div class="score-breakdown">
+                            <div class="score-breakdown-title">Score Components</div>
+                            <div class="score-row"><span>⭐ Stars impact</span><span id="s-stars">0</span></div>
+                            <div class="score-row"><span>📦 Portfolio size</span><span id="s-repos">0</span></div>
+                            <div class="score-row"><span>👥 Community pull</span><span id="s-followers">0</span></div>
+                            <div class="score-row"><span>🌍 Language diversity</span><span id="s-langs">0</span></div>
+                            <div class="score-row"><span>⏳ Account maturity</span><span id="s-age">0</span></div>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Insight Strip -->
+                <div class="insight-strip slide-up" style="animation-delay:0.15s">
+                    <div class="insight-box">
+                        <span class="insight-emoji">📅</span>
+                        <span id="ins-age" class="insight-val">—</span>
+                        <span class="insight-label">Years Active</span>
+                    </div>
+                    <div class="insight-box">
+                        <span class="insight-emoji">⭐</span>
+                        <span id="ins-avg-stars" class="insight-val">—</span>
+                        <span class="insight-label">Avg Stars / Repo</span>
+                    </div>
+                    <div class="insight-box">
+                        <span class="insight-emoji">🔱</span>
+                        <span id="ins-fork-ratio" class="insight-val">—</span>
+                        <span class="insight-label">Original Repos</span>
+                    </div>
+                    <div class="insight-box">
+                        <span class="insight-emoji">🌐</span>
+                        <span id="ins-langs-count" class="insight-val">—</span>
+                        <span class="insight-label">Languages Used</span>
+                    </div>
+                </div>
+
+                <!-- Row 2: Highlights + Language Chart -->
                 <div class="dashboard-grid">
-                    <!-- Repository Stats -->
-                    <div class="card repo-stats-card slide-up" style="animation-delay: 0.2s;">
-                        <h3>Repository Highlights</h3>
+
+                    <!-- Repository Highlights -->
+                    <div class="card repo-stats-card slide-up" style="animation-delay:0.2s">
+                        <h3><span class="card-icon">📦</span> Repository Highlights</h3>
                         <div class="highlight-grid">
                             <div class="highlight-box">
-                                <span class="title">Total Repositories</span>
-                                <span id="total-repos-stat" class="value">0</span>
+                                <span class="hl-label">Total Repositories</span>
+                                <span id="total-repos-stat" class="hl-value">0</span>
                             </div>
                             <div class="highlight-box">
-                                <span class="title">Total Stars</span>
-                                <span id="total-stars-stat" class="value">0</span>
+                                <span class="hl-label">Total Stars</span>
+                                <span id="total-stars-stat" class="hl-value">0</span>
                             </div>
                             <div class="highlight-box">
-                                <span class="title">Total Forks</span>
-                                <span id="total-forks-stat" class="value">0</span>
+                                <span class="hl-label">🍴 Forks Received</span>
+                                <span id="total-forks-stat" class="hl-value">0</span>
+                            </div>
+                            <div class="highlight-box">
+                                <span class="hl-label">🔱 Original Repos</span>
+                                <span id="original-repos-stat" class="hl-value">0</span>
                             </div>
                             <div class="highlight-box span-2">
-                                <span class="title">Most Starred Repo</span>
-                                <span id="most-starred-stat" class="value text-md">-</span>
+                                <span class="hl-label">📥 Repos Forked by You</span>
+                                <span id="forked-by-you-stat" class="hl-value">0</span>
                             </div>
                             <div class="highlight-box span-2">
-                                <span class="title">Recently Updated</span>
-                                <span id="recent-repo-stat" class="value text-md">-</span>
+                                <span class="hl-label">⭐ Most Starred Repo</span>
+                                <span id="most-starred-stat" class="hl-value text-md">—</span>
+                            </div>
+                            <div class="highlight-box span-2">
+                                <span class="hl-label">🕐 Recently Updated</span>
+                                <span id="recent-repo-stat" class="hl-value text-md">—</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Language Chart -->
-                    <div class="card chart-card slide-up" style="animation-delay: 0.3s;">
-                        <h3>Languages</h3>
+                    <div class="card chart-card slide-up" style="animation-delay:0.3s">
+                        <h3><span class="card-icon">🧬</span> Language DNA</h3>
                         <div class="chart-container">
                             <canvas id="languageChart"></canvas>
                         </div>
                     </div>
 
-                    <!-- Repo Chart -->
-                    <div class="card chart-card slide-up span-full" style="animation-delay: 0.4s;">
-                        <h3>Repository Popularity (Stars)</h3>
+                    <!-- Bar Chart -->
+                    <div class="card chart-card slide-up span-full" style="animation-delay:0.35s">
+                        <h3><span class="card-icon">🏆</span> Repository Popularity</h3>
                         <div class="chart-container-bar">
                             <canvas id="repoChart"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <!-- Table -->
-                <div class="card table-card slide-up" style="animation-delay: 0.5s;">
-                    <h3>Repositories</h3>
+                <!-- Deep Analysis -->
+                <div class="card analysis-card slide-up" style="animation-delay:0.4s">
+                    <h3><span class="card-icon">🔬</span> Deep Analysis</h3>
+                    <div class="analysis-grid" id="analysis-grid">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Repository Table -->
+                <div class="card table-card slide-up" style="animation-delay:0.45s">
+                    <h3><span class="card-icon">📋</span> Top Repositories</h3>
                     <div class="table-responsive">
                         <table id="repo-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Stars</th>
-                                    <th>Forks</th>
+                                    <th>Repository</th>
+                                    <th>⭐ Stars</th>
+                                    <th>🍴 Forks</th>
                                     <th>Language</th>
+                                    <th>Size (KB)</th>
                                     <th>Last Updated</th>
                                 </tr>
                             </thead>
@@ -162,9 +239,31 @@
                         </table>
                     </div>
                 </div>
-            </div>
+
+                <!-- GitHub Contribution Heatmap -->
+                <div class="card streak-card slide-up" style="animation-delay:0.5s" id="streak-card">
+                    <h3><span class="card-icon">🟩</span> GitHub Contribution Activity</h3>
+                    <div class="streak-meta" id="streak-meta"></div>
+                    <div class="streak-wrap">
+                        <div class="streak-img-wrap" id="streak-img-wrap">
+                            <!-- ghchart image injected by JS -->
+                        </div>
+                        <div class="streak-legend">
+                            <span class="sl-label">Less</span>
+                            <span class="sl-box" style="--c:rgba(255,255,255,0.06)"></span>
+                            <span class="sl-box" style="--c:#2d1b69"></span>
+                            <span class="sl-box" style="--c:#4c1d95"></span>
+                            <span class="sl-box" style="--c:#7c3aed"></span>
+                            <span class="sl-box" style="--c:#a78bfa"></span>
+                            <span class="sl-label">More</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /dashboard -->
         </main>
     </div>
+
     <script src="script.js"></script>
 </body>
 
