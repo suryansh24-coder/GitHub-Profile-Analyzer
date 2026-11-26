@@ -26,6 +26,8 @@ Coverage:
 - All 11 ES modules checked with `node --check --input-type=module`.
 - FastAPI served `/`, `/style.css`, `/script.js`, `/assets/css/app.css`, `/assets/js/app.js` and `/assets/js/views/repository.js` with HTTP 200.
 - Live backend verified with real GitHub data for `/api/health`, `/api/programs`, `/api/profile/octocat` and `/api/repos/search`.
+- Headless Chromium DOM verified that `app.js` executes: overview shows `Online`, the sidebar reports GitHub public mode, `#programs` renders eight verified program cards, and `#analyzer` activates the preserved analyzer view with its original IDs.
+- A headless screenshot was generated successfully; visual inspection by this model was unavailable because image input is not supported.
 
 ## Manual verification checklist
 
