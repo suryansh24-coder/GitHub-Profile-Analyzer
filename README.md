@@ -88,7 +88,7 @@ The OpenAPI schema is available at `/docs`. Main route groups:
 - `20e40a3` — architecture and plan
 - `545a40a` — backend services and tests
 - `e3e6004` — ignore bytecode and local env files
-- next checkpoint — workspace UI and deployment adapter
+- `74f245c` — workspace UI, documentation and deployment adapter
 
 ## Known limits
 
