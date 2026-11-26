@@ -29,14 +29,16 @@ Last updated: after Phase 2 (backend) verification.
 | Documentation generators | Implemented | CONTRIBUTING / CODE_OF_CONDUCT / SECURITY / ARCHITECTURE drafts |
 | Project Rescue signals | Implemented | `/api/repos/rescue`; explicitly not labelling projects abandoned |
 | Developer discovery via GitHub user search | Implemented | `/api/developers/search` |
-| Dashboard shell, navigation and all views | Planned | Phase 3/4 |
-| Collaboration Hub local listings | Planned | Phase 4 |
-| Roadmap and career view | Planned | frontend phase; backend data already available |
-| AI Developer Lab LLM helpers | Partially Implemented | Backend endpoint and status work; returns 503 with setup guidance without a key |
-| Reports & exports (JSON/CSV/Markdown) | Implemented (API) | `/api/reports/export`; browser download UI pending |
-| PDF export | Planned | browser print dialog will be used instead of a fake generator |
+| Dashboard shell, navigation and all views | Implemented | SPA shell with 9 hash-routed views; HTML balance and module syntax verified |
+| Collaboration Hub local listings | Implemented | Browser-only `localStorage` shortlist with no seeded entries |
+| Roadmap and career view | Implemented | Public repository years and technology adoption shown as evidence |
+| AI Developer Lab LLM helpers | Partially Implemented | Backend endpoint, status UI and setup guidance work; provider response untested without a key |
+| Reports & exports (JSON/CSV/Markdown) | Implemented | `/api/reports/export` plus Markdown download buttons in result cards |
+| PDF export | Planned (intentional) | browser print dialog will be used instead of a fake generator |
 | PostgreSQL database and migrations | Planned | no database in first release by design |
 | Redis cache | Planned | bounded in-memory TTL cache implemented instead |
 | GitHub OAuth and repository write actions | Planned | explicit authorization required; write endpoints remain disabled |
 | Background job queue | Planned | synchronous bounded analysis used instead |
+| Vercel deployment adapter | Implemented (config) | `vercel.json` and `api/index.py` import verified; live Vercel deploy not executed |
+| Documentation set | Implemented | product, architecture, security, operations, testing and research docs added |
 | Automated test suite | Implemented | 19 tests executed, all passed (`python -m pytest -q`) |

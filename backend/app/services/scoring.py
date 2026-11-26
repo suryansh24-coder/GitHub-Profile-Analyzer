@@ -12,7 +12,7 @@ TECHNOLOGY_SIGNALS: dict[str, tuple[str, ...]] = {
     "TypeScript": ("typescript", "tsx", "nestjs"),
     "Java": ("java", "spring boot", "maven", "gradle"),
     "C++": ("c++", "cpp", "cmake"),
-    "C": ("\bc\b", "cmake"),
+    "C": (r"\bc\b", "cmake"),
     "Go": ("\bgo\b", "golang", "gin"),
     "Rust": ("rust", "cargo"),
     "Ruby": ("ruby", "rails"),

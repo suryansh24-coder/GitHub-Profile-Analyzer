@@ -9,10 +9,168 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/app.css">
 </head>
 
 <body>
-    <div class="app-container">
+    <div id="platform-shell" class="platform-shell">
+        <aside class="sidebar" aria-label="Primary navigation">
+            <a class="brand" href="#overview" data-view-link="overview">
+                <span class="brand-mark">DA</span>
+                <span class="brand-copy"><strong>DevAtlas</strong><small>Open Source Intelligence</small></span>
+            </a>
+            <nav class="nav-list">
+                <button class="nav-item is-active" type="button" data-view="overview"><span class="nav-mark">01</span><span>Overview</span></button>
+                <button class="nav-item" type="button" data-view="explore"><span class="nav-mark">02</span><span>Explore</span></button>
+                <button class="nav-item" type="button" data-view="contributions"><span class="nav-mark">03</span><span>Contributions</span></button>
+                <button class="nav-item" type="button" data-view="programs"><span class="nav-mark">04</span><span>Programs</span></button>
+                <button class="nav-item" type="button" data-view="developer"><span class="nav-mark">05</span><span>Developer DNA</span></button>
+                <button class="nav-item" type="button" data-view="repository"><span class="nav-mark">06</span><span>Repository Lab</span></button>
+                <button class="nav-item" type="button" data-view="ai"><span class="nav-mark">07</span><span>AI Lab</span></button>
+                <button class="nav-item" type="button" data-view="collab"><span class="nav-mark">08</span><span>Collab Hub</span></button>
+                <button class="nav-item" type="button" data-view="analyzer"><span class="nav-mark">09</span><span>Profile Analyzer</span></button>
+            </nav>
+            <div class="sidebar-foot">
+                <span class="status-dot" id="sidebar-status-dot"></span>
+                <span id="sidebar-status-text">Checking API…</span>
+            </div>
+        </aside>
+
+        <div class="workspace">
+            <header class="topbar">
+                <div class="topbar-title">
+                    <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Toggle navigation">Menu</button>
+                    <span id="current-view-label">Overview</span>
+                </div>
+                <div class="topbar-actions">
+                    <span class="data-note">Live GitHub data · no fabricated results</span>
+                    <button class="button button-primary button-sm" type="button" data-view="analyzer">Analyze a profile</button>
+                </div>
+            </header>
+
+            <div id="view-root">
+                <section id="view-overview" class="view is-active" aria-label="Overview">
+                    <div class="view-head">
+                        <p class="eyebrow">Contributor-first open source workspace</p>
+                        <h1>Find the work. Understand the codebase. Ship the change.</h1>
+                        <p class="lede">A connected toolkit for exploring real repositories, matching open issues to your skills, reading a project's health, and building a credible contribution history.</p>
+                    </div>
+                    <div class="hero-panel">
+                        <div class="hero-copy">
+                            <h2>Start with a real profile</h2>
+                            <p>The original analyzer is preserved and available as the last workspace view. New intelligence is backed by the FastAPI service.</p>
+                            <div class="hero-actions">
+                                <button class="button button-primary" type="button" data-view="analyzer">Open Profile Analyzer</button>
+                                <button class="button button-secondary" type="button" data-view="contributions">Find contribution matches</button>
+                            </div>
+                        </div>
+                        <div class="hero-metrics">
+                            <div><strong id="overview-program-count">—</strong><span>Verified programs</span></div>
+                            <div><strong id="overview-api-state">—</strong><span>API status</span></div>
+                            <div><strong id="overview-version">v2</strong><span>Platform release</span></div>
+                        </div>
+                    </div>
+                    <div class="section-head"><h2>Workspace</h2><p>Every view below is connected to the same backend and uses live data.</p></div>
+                    <div class="capability-grid">
+                        <button class="capability" type="button" data-view="explore"><span class="cap-index">01</span><strong>Open Source Explorer</strong><span>Search real repositories by language, topic, stars and activity.</span></button>
+                        <button class="capability" type="button" data-view="contributions"><span class="cap-index">02</span><strong>Contribution Matcher</strong><span>Rank genuinely open issues against your actual skills.</span></button>
+                        <button class="capability" type="button" data-view="programs"><span class="cap-index">03</span><strong>Program Registry</strong><span>Verified timelines for GSoC, Outreachy, LFX and more.</span></button>
+                        <button class="capability" type="button" data-view="developer"><span class="cap-index">04</span><strong>Developer DNA</strong><span>Five transparent scores with evidence, not a black box.</span></button>
+                        <button class="capability" type="button" data-view="repository"><span class="cap-index">05</span><strong>Repository Lab</strong><span>README Doctor, health checks, X-Ray and PR review support.</span></button>
+                        <button class="capability" type="button" data-view="collab"><span class="cap-index">06</span><strong>Collab Hub</strong><span>Keep your own shortlist locally, with no invented listings.</span></button>
+                    </div>
+                    <div class="privacy-strip">
+                        <strong>Privacy by design</strong>
+                        <span>Secrets stay on the server. Optional AI is disabled until configured. No write action runs without explicit authorization.</span>
+                    </div>
+                </section>
+
+                <section id="view-explore" class="view" aria-label="Explore repositories">
+                    <div class="view-head"><p class="eyebrow">Discovery</p><h1>Open Source Explorer</h1><p class="lede">Search GitHub repositories with real filters and see contribution signals without claiming a project is abandoned.</p></div>
+                    <form id="explore-form" class="tool-form">
+                        <label>Keywords<input id="explore-query" type="text" placeholder="cli, compiler, developer tools" required></label>
+                        <label>Language<input id="explore-language" type="text" placeholder="Python, TypeScript, Go"></label>
+                        <label>Category<select id="explore-category"><option value="">Any category</option><option>Developer Tools</option><option>Web Applications</option><option>Data &amp; AI</option><option>Infrastructure</option><option>Documentation</option><option>Games</option></select></label>
+                        <label>Minimum stars<input id="explore-min-stars" type="number" min="0" max="1000000" value="50"></label>
+                        <label>Sort<select id="explore-sort"><option value="stars">Stars</option><option value="updated">Recently updated</option><option value="forks">Forks</option></select></label>
+                        <button class="button button-primary" type="submit">Search repositories</button>
+                    </form>
+                    <div id="explore-results" class="result-stack"><p class="empty-note">Run a search to see real GitHub results.</p></div>
+                </section>
+
+                <section id="view-contributions" class="view" aria-label="Contribution matching">
+                    <div class="view-head"><p class="eyebrow">First contribution</p><h1>Contribution Matcher</h1><p class="lede">We read your public profile for evidence, search open issues, then re-check each issue before showing it. Nothing is reserved or guaranteed.</p></div>
+                    <form id="match-form" class="tool-form">
+                        <label>GitHub username<input id="match-username" type="text" placeholder="octocat" required></label>
+                        <label>Extra languages or technologies<input id="match-languages" type="text" placeholder="Python, FastAPI, Docker"></label>
+                        <label>Maximum matches<input id="match-limit" type="number" min="1" max="20" value="8"></label>
+                        <button class="button button-primary" type="submit">Match issues</button>
+                    </form>
+                    <div id="match-results" class="result-stack"><p class="empty-note">Enter a username to find beginner-friendly, open issues.</p></div>
+                </section>
+
+                <section id="view-programs" class="view" aria-label="Open source programs">
+                    <div class="view-head"><p class="eyebrow">Verified sources</p><h1>Open Source Programs</h1><p class="lede">Only officially published dates are shown. Entries without a published deadline say so explicitly.</p></div>
+                    <div class="filter-bar">
+                        <input id="program-filter-search" type="search" placeholder="Search programs">
+                        <select id="program-filter-status"><option value="">All statuses</option><option value="applications_open">Applications open</option><option value="upcoming">Upcoming</option><option value="ongoing">Ongoing</option><option value="applications_closed">Applications closed</option><option value="completed">Completed</option><option value="status_unverified">Unverified</option></select>
+                        <label class="check"><input id="program-beginner" type="checkbox"> Beginner friendly</label>
+                        <label class="check"><input id="program-mentorship" type="checkbox"> Mentorship</label>
+                        <button class="button button-secondary button-sm" id="program-refresh" type="button">Refresh</button>
+                    </div>
+                    <div id="program-results" class="result-stack"><p class="empty-note">Loading verified programs…</p></div>
+                </section>
+
+                <section id="view-developer" class="view" aria-label="Developer intelligence">
+                    <div class="view-head"><p class="eyebrow">Evidence-first profile</p><h1>Developer DNA &amp; Roadmap</h1><p class="lede">Five transparent scores, an evidence-based skill map, and a timeline built from public repository history.</p></div>
+                    <form id="developer-form" class="tool-form">
+                        <label>GitHub username<input id="developer-username" type="text" placeholder="octocat" required></label>
+                        <button class="button button-primary" type="submit">Build intelligence report</button>
+                    </form>
+                    <div id="developer-results" class="result-stack"><p class="empty-note">Enter a username to build a report.</p></div>
+                </section>
+
+                <section id="view-repository" class="view" aria-label="Repository analysis">
+                    <div class="view-head"><p class="eyebrow">Repository intelligence</p><h1>Repository Lab</h1><p class="lede">Static, read-only analysis. Findings are separated from hypotheses, and no repository is modified.</p></div>
+                    <form id="repo-form" class="tool-form">
+                        <label>Repository<input id="repo-input" type="text" placeholder="owner/repo or https://github.com/owner/repo" required></label>
+                        <label>Pull request URL or number (PR Guardian)<input id="repo-context" type="text" placeholder="https://github.com/owner/repo/pull/12"></label>
+                        <label>Docs kind<select id="repo-docs-kind"><option value="contributing">CONTRIBUTING.md</option><option value="code_of_conduct">CODE_OF_CONDUCT.md</option><option value="security">SECURITY.md</option><option value="architecture">ARCHITECTURE.md</option></select></label>
+                        <div class="tool-buttons">
+                            <button class="button button-secondary button-sm" type="button" data-repo-tool="readme">README Doctor</button>
+                            <button class="button button-secondary button-sm" type="button" data-repo-tool="health">Health Check</button>
+                            <button class="button button-secondary button-sm" type="button" data-repo-tool="xray">Codebase X-Ray</button>
+                            <button class="button button-secondary button-sm" type="button" data-repo-tool="pr-guard">PR Guardian</button>
+                            <button class="button button-secondary button-sm" type="button" data-repo-tool="docs">Docs Drafts</button>
+                        </div>
+                    </form>
+                    <div id="repo-results" class="result-stack"><p class="empty-note">Choose a tool to analyze a repository.</p></div>
+                </section>
+
+                <section id="view-ai" class="view" aria-label="AI lab">
+                    <div class="view-head"><p class="eyebrow">Optional intelligence</p><h1>AI Developer Lab</h1><p class="lede">AI is a helper, not the foundation. When no key is configured, the backend explains setup and deterministic tools keep working.</p></div>
+                    <div id="ai-status" class="result-stack"><p class="empty-note">Checking AI status…</p></div>
+                    <form id="ai-form" class="tool-form">
+                        <label>Task<select id="ai-task"><option value="explain">Explain a contribution path</option><option value="review">Review a README draft</option><option value="roadmap">Suggest a learning sequence</option></select></label>
+                        <label>Context<textarea id="ai-prompt" rows="5" placeholder="Describe the repository, issue, or skill goal" required></textarea></label>
+                        <button class="button button-primary" type="submit">Generate guidance</button>
+                    </form>
+                    <div id="ai-output" class="result-stack"></div>
+                </section>
+
+                <section id="view-collab" class="view" aria-label="Collaboration hub">
+                    <div class="view-head"><p class="eyebrow">Local workspace</p><h1>Collab Hub</h1><p class="lede">Save repositories, issues and programs you find. Entries live only in this browser, so nothing is invented or shared.</p></div>
+                    <form id="collab-form" class="tool-form">
+                        <label>Title<input id="collab-title" type="text" placeholder="Issue or repository name" required></label>
+                        <label>URL<input id="collab-url" type="url" placeholder="https://github.com/owner/repo/issues/1" required></label>
+                        <label>Tags<input id="collab-tags" type="text" placeholder="python, good first issue"></label>
+                        <button class="button button-primary" type="submit">Save locally</button>
+                    </form>
+                    <div id="collab-results" class="result-stack"><p class="empty-note">No saved entries yet.</p></div>
+                </section>
+
+                <section id="view-analyzer" class="view" aria-label="Original profile analyzer">
+                    <div class="app-container">
 
         <!-- Theme Toggle -->
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
@@ -262,9 +420,14 @@
 
             </div><!-- /dashboard -->
         </main>
+                    </div>
+                </section>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
+    <script type="module" src="assets/js/app.js"></script>
 </body>
 
 </html>

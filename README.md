@@ -1,164 +1,98 @@
-# GitHub Profile Analyzer
+# README
 
-![Version](https://img.shields.io/badge/version-1.0.0-peach)
-![Status](https://img.shields.io/badge/status-production--ready-success)
-![Deployment](https://img.shields.io/badge/deployment-static--ready-brightgreen)
-![API](https://img.shields.io/badge/API-GitHub%20REST-black)
+DevAtlas is a contributor-first open-source workspace built around a FastAPI backend and a browser dashboard. It keeps the original GitHub Profile Analyzer intact while adding live repository discovery, contribution matching, verified program data, developer intelligence and static repository analysis.
 
----
+## What is real
 
-## Tech Stack
+- All profile, repository, issue and pull-request data comes from the GitHub REST API at request time.
+- Program dates come from official sources and are marked `null` when unpublished.
+- Scores are deterministic heuristics based on public repository metadata, not claims of engineering ability.
+- Repository tools are read-only. No code is executed and no GitHub write action runs without explicit OAuth authorization.
+- AI helpers require `OPENAI_API_KEY` on the backend. Without it, deterministic tools still work and the UI shows setup guidance.
 
-![HTML5](https://img.shields.io/badge/HTML5-Markup-orange?logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-styling-blue?logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-logic-yellow?logo=javascript&logoColor=black)
-![Chart.js](https://img.shields.io/badge/Chart.js-data%20visualization-red?logo=chartdotjs&logoColor=white)
-![GitHub API](https://img.shields.io/badge/GitHub%20API-data%20source-black?logo=github)
+## Run locally
 
----
-
-## Overview
-
-A modern, lightweight **developer analytics dashboard** that analyzes any GitHub profile and converts repository data into **clear insights, visual analytics, and developer metrics**.
-
-The application runs entirely in the **browser with zero backend**, allowing instant analysis of GitHub profiles.
-
-Simply open **index.html**, paste a GitHub profile, and generate a complete developer analytics report.
-
----
-
-## Features
-
-### Developer Profile Summary
-Displays important GitHub profile information:
-
-- Profile avatar  
-- Username and bio  
-- Followers and following  
-- Public repositories  
-- Account creation date  
-- Direct profile link  
-
----
-
-### Repository Insights
-Automatic repository analysis including:
-
-- Total repositories  
-- Total forks  
-- Most starred repository  
-- Most recently updated repository  
-
----
-
-### Programming Language Analytics
-
-Analyzes languages used across repositories and displays them in a **clean pie chart visualization**.
-
----
-
-### Developer Productivity Score
-
-Custom scoring system:
-
-Developer Score =  
-(Stars × 2) + (Repositories × 3) + (Followers × 1)
-
-Provides a quick indicator of **developer engagement and project popularity**.
-
----
-
-### Repository Data Table
-
-Clean tabular view displaying:
-
-- Repository name  
-- Programming language  
-- Stars  
-- Forks  
-- Last updated date  
-
-Each repository links directly to GitHub.
-
----
-
-### Visual Analytics Dashboard
-
-Interactive visualizations powered by **Chart.js** including:
-
-- Language usage pie chart  
-- Repository popularity bar chart  
-
----
-
-## How to Use
-
-1. Clone or download the repository.
-
-2. Open the application by launching:
-
-```
-index.html
+```bash
+python -m pip install -r backend/requirements.txt
+uvicorn app.main:app --app-dir backend --reload
 ```
 
-3. Enter a GitHub username or profile URL:
+Open `http://127.0.0.1:8000`.
 
-```
-https://github.com/username
-```
+Optional backend environment variables are documented in `.env.example`. Set `GITHUB_TOKEN` to raise the GitHub API limit from 60 to 5000 requests/hour. Never put tokens in frontend code.
 
-4. Click **Analyze**.
+## Run tests
 
-The dashboard will instantly generate a **complete GitHub profile report**.
-
----
-
-## Project Structure
-
-```
-github-profile-analyzer
-│
-├── index.html
-├── style.css
-├── script.js
-└── README.md
+```bash
+cd backend
+python -m pytest -q
 ```
 
----
+All 19 tests passed at the last verification. Frontend modules were syntax-checked with `node --check --input-type=module`.
 
-## GitHub API Endpoints Used
+## Workspace views
 
-Profile Data
+| View | Purpose |
+| --- | --- |
+| Overview | Workspace entry point and live service status |
+| Explore | Search real repositories with language, topic, star and activity filters |
+| Contributions | Rank revalidated open issues against your public skill evidence |
+| Programs | Verified timelines for open-source programs |
+| Developer DNA | Five transparent scores, skill evidence and public history timeline |
+| Repository Lab | README Doctor, health checks, static X-Ray, PR Guardian and doc drafts |
+| AI Lab | Optional backend-proxied AI guidance with clear setup state |
+| Collab Hub | Locally saved links; nothing is invented or shared |
+| Profile Analyzer | The preserved original analyzer with charts and heatmap |
 
-```
-https://api.github.com/users/{username}
-```
+## API
 
-Repository Data
+The OpenAPI schema is available at `/docs`. Main route groups:
 
-```
-https://api.github.com/users/{username}/repos
-```
+- `/api/health`, `/api/cache`
+- `/api/profile/{username}`
+- `/api/repos/search`, `/api/repos/rescue`, `/api/repos/{owner}/{repo}`, `/api/developers/search`
+- `/api/issues/search`, `/api/issues/match`, `/api/issues/{owner}/{repo}/{number}`
+- `/api/programs`
+- `/api/repository/readme`, `/health`, `/xray`, `/pr-guard`, `/docs-generate`
+- `/api/ai/status`, `/api/ai/complete`
+- `/api/reports/export`
 
-Language Statistics
+## Architecture
 
-```
-https://api.github.com/repos/{owner}/{repo}/languages
-```
+- `index.html` — SPA shell plus the preserved legacy analyzer markup.
+- `style.css`, `script.js` — original analyzer styling and logic, unchanged in behaviour.
+- `assets/css/app.css` — workspace design system loaded after `style.css`.
+- `assets/js/` — ES modules for API access, UI helpers and view controllers.
+- `backend/app/core/` — configuration, cache, validation and error types.
+- `backend/app/services/` — GitHub client, scoring and analysis services.
+- `backend/app/routers/` — FastAPI route groups.
+- `api/index.py`, `vercel.json` — serverless adapter and deployment configuration.
 
----
+## Documentation
 
-## Future Improvements
+- `docs/product/PROJECT_AUDIT.md`
+- `docs/product/IMPLEMENTATION_PLAN.md`
+- `docs/product/FEATURE_STATUS.md`
+- `docs/product/USER_GUIDE.md`
+- `docs/architecture/SYSTEM_OVERVIEW.md`
+- `docs/architecture/FRONTEND_ARCHITECTURE.md`
+- `docs/architecture/DATABASE_SCHEMA.md`
+- `docs/security/SECURITY.md`
+- `docs/operations/DEPLOYMENT.md`
+- `docs/testing/TEST_PLAN.md`
+- `docs/research/PROGRAM_SOURCES.md`
 
-Potential upgrades:
+## Checkpoints
 
-- Contribution heatmap analytics  
-- Repository quality scoring  
-- Developer portfolio strength meter  
-- AI developer profile summaries  
-- Open-source contribution insights
+- `68cc42a` — audit
+- `20e40a3` — architecture and plan
+- `545a40a` — backend services and tests
+- `e3e6004` — ignore bytecode and local env files
+- next checkpoint — workspace UI and deployment adapter
 
-## Disclaimer
+## Known limits
 
-This project is developed for educational and portfolio purposes.  
-It uses publicly available data from the GitHub REST API and is not affiliated with or endorsed by GitHub.
+- No database in the first release; a bounded in-memory TTL cache is used.
+- Private contributions, non-GitHub work and skills without public evidence are not represented.
+- PDF export is intentionally not generated; use browser print or Markdown/JSON/CSV exports.
+- GitHub write actions and background jobs are planned but not enabled.
