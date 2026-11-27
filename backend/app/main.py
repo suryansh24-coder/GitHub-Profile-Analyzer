@@ -40,6 +40,9 @@ app = FastAPI(
     title="GitHub Profile Analyzer — Developer Ecosystem API",
     version="2.0.0",
     description="Backend services for developer intelligence, open-source discovery, contribution matching and repository analysis.",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
     lifespan=lifespan,
 )
 
@@ -80,7 +83,7 @@ async def index() -> Response:
     try:
         return FileResponse(index_path)
     except (OSError, RuntimeError):
-        return JSONResponse({"service": "developer-ecosystem-api", "docs": "/docs"})
+        return JSONResponse({"service": "developer-ecosystem-api", "docs": "/api/docs"})
 
 
 @app.get("/style.css", include_in_schema=False)

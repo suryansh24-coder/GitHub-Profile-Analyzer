@@ -33,8 +33,21 @@ class Settings:
         return bool(self.openai_api_key)
 
 
+def _default_cors_origins() -> tuple[str, ...]:
+    origins = ["http://localhost:8000", "http://127.0.0.1:8000"]
+    vercel_url = os.getenv("VERCEL_URL")
+    if vercel_url:
+        origins.append(f"https://{vercel_url}")
+    return tuple(origins)
+
+
 def get_settings() -> Settings:
-    origins = os.getenv("CORS_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000")
+    configured_origins = os.getenv("CORS_ORIGINS")
+    origins = (
+        tuple(origin.strip() for origin in configured_origins.split(",") if origin.strip())
+        if configured_origins is not None
+        else _default_cors_origins()
+    )
     return Settings(
         github_token=os.getenv("GITHUB_TOKEN") or None,
         github_api_base=os.getenv("GITHUB_API_BASE", "https://api.github.com").rstrip("/"),
@@ -44,7 +57,7 @@ def get_settings() -> Settings:
         openai_api_key=os.getenv("OPENAI_API_KEY") or None,
         openai_model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
         openai_base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/"),
-        cors_origins=tuple(origin.strip() for origin in origins.split(",") if origin.strip()),
+        cors_origins=origins,
         app_root=os.getenv("APP_ROOT", os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))),
     )
 

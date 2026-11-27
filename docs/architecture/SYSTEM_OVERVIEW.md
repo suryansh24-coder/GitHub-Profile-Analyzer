@@ -1,128 +1,386 @@
 # System Overview
 
-Version: 1.0 (target architecture)
-Status: design baseline for the `feat/developer-ecosystem` branch
+**Version:** 2.0 · **Scope:** implemented system, not a target wishlist · **Last verified:** 2026-11-27
 
-## Product direction
+DevAtlas is a single-origin application: a static browser workspace, one FastAPI service, and bounded integrations with GitHub and an optional AI provider. It deliberately has no database and no write path.
 
-GitHub Profile Analyzer becomes a single-page developer intelligence workspace. The product hierarchy is
-deliberately contributor-first:
+---
 
-1. Open-source discovery
-2. Contribution matching
-3. Developer intelligence
-4. Repository improvement
-5. Developer collaboration
-6. Maintainer intelligence
-7. AI developer tools
+## 1. System context
 
-The original profile analyzer remains a first-class view and keeps its scoring model and charts.
+```mermaid
+flowchart LR
+    U["Contributor / maintainer"] --> UI["DevAtlas browser workspace"]
+    UI --> API["FastAPI service<br/>/api/*"]
+    UI --> LEG["Preserved legacy analyzer<br/>public GitHub API"]
+    API --> GH["GitHub REST API"]
+    API -.->|"optional"| AI["OpenAI-compatible API"]
+    UI --> LS["localStorage<br/>theme · shortlist"]
+    API -.->|"verified static data"| REG["Program registry"]
 
-## High-level architecture
-
-```
-Browser (static SPA, hash routing)
-├── index.html                 app shell + preserved legacy analyzer markup
-├── style.css                  preserved legacy analyzer styles
-├── script.js                  preserved legacy analyzer logic (GitHub REST, charts, theme)
-├── assets/css/app.css         premium dashboard design system (loaded after style.css)
-└── assets/js/
-    ├── api.js                 backend client, timeout, error normalization
-    ├── ui.js                  escaping, formatting, states, modal, toast, pagination
-    ├── app.js                 router, shell, global search, notifications, settings
-    └── views/*.js             feature modules (render + interaction handlers)
-
-Backend (FastAPI, Python)
-├── backend/app/main.py        app factory, CORS, error handlers, static fallback
-├── backend/app/core/          config, TTL cache, structured logging, error types
-├── backend/app/services/      github, scoring, readme, repo_health, issue_match,
-│                              codebase, pr_guard, programs, docs, ai
-├── backend/app/routers/       profile, explore, issues, repository, programs,
-│                              community, reports, system
-└── backend/tests/             API, service and security tests (pytest + httpx)
+    subgraph DeployedUnit["One Vercel project"]
+        UI
+        API
+        REG
+    end
 ```
 
-## Design principles
+### Product hierarchy
 
-- **No fabricated data.** Repositories, issues, pull requests and profiles come from the GitHub REST
-  API. Program records link to official sites and never invent deadlines. Local collaboration listings
-  are explicitly labelled as stored in the browser.
-- **Deterministic first, AI optional.** README analysis, health checks, scoring, issue matching, static
-  codebase analysis and PR heuristics work without an LLM. AI endpoints require a server-side key and
-  return a clear setup error otherwise.
-- **Secrets stay server-side.** `GITHUB_TOKEN` and `OPENAI_API_KEY` are read only by the backend. The
-  frontend never receives them.
-- **Untrusted repositories are data only.** Repository content is fetched as text and analysed
-  statically. No repository script is executed, no shell command is run on repository content, and
-  file sizes / request counts are bounded.
-- **Graceful degradation.** If the backend is not running (e.g. a pure static deployment), the legacy
-  analyzer still works through the public GitHub API, and feature views show a setup message instead of
-  fake content.
+```mermaid
+flowchart TD
+    ROOT["Contributor-first workspace"] --> D["Discover<br/>repositories · programs"]
+    ROOT --> M["Match<br/>open issues to public evidence"]
+    ROOT --> I["Inspect<br/>README · health · codebase · PR"]
+    ROOT --> R["Report<br/>Markdown · JSON · CSV"]
+    ROOT --> C["Collaborate<br/>browser-only shortlist"]
+    ROOT --> A["Optional AI<br/>server-side key required"]
+```
 
-## API contract summary
+The original analyzer remains view **09**, with its scoring formula, charts, heatmap and theme persistence unchanged in behavior.
 
-All backend routes are prefixed with `/api`. Full interactive documentation is generated at `/docs`.
+---
 
-| Method | Path | Purpose |
+## 2. Container architecture
+
+```mermaid
+flowchart TB
+    subgraph Browser["Browser"]
+        HTML["index.html<br/>SPA shell + legacy markup"]
+        CSS["style.css<br/>legacy design"]
+        ACSS["assets/css/app.css<br/>workspace design system"]
+        JS["assets/js/app.js<br/>hash router"]
+        APIJS["assets/js/api.js<br/>same-origin client"]
+        UIFS["assets/js/ui.js<br/>DOM builders"]
+        VIEWS["assets/js/views/*.js<br/>8 controllers"]
+        LEGACY["script.js<br/>legacy analyzer"]
+
+        HTML --> CSS --> ACSS
+        HTML --> LEGACY
+        HTML --> JS --> VIEWS
+        VIEWS --> UIFS
+        VIEWS --> APIJS
+    end
+
+    subgraph Server["FastAPI application"]
+        MAIN["main.py<br/>lifespan · CORS · handlers · static"]
+        CORE["core/<br/>config · cache · validation · errors"]
+        ROUTERS["routers/<br/>8 route groups"]
+        SERVICES["services/<br/>GitHub client + 11 analyzers"]
+        TESTS["tests/<br/>19 tests"]
+
+        MAIN --> ROUTERS --> SERVICES
+        SERVICES --> CORE
+    end
+
+    APIJS -->|"GET/POST /api/*"| MAIN
+    LEGACY -->|"direct public API"| GH["GitHub"]
+
+    SERVICES --> GH
+    SERVICES -.-> AI["AI provider"]
+```
+
+| Layer | Modules | Responsibility |
 | --- | --- | --- |
-| GET | `/api/health` | Backend status and integration availability (no secret values) |
-| GET | `/api/profile/{username}` | Enrich developer intelligence (scores, DNA, skill map, timeline) |
-| GET | `/api/repos/search` | Search real repositories with filters and pagination |
-| GET | `/api/repos/{owner}/{repo}` | Repository metadata |
-| GET | `/api/issues/search` | Search real open issues with filters and pagination |
-| POST | `/api/issues/match` | Match real issues against a skill map from a GitHub username |
-| GET | `/api/issues/{owner}/{repo}/{number}` | Issue detail + deterministic complexity analysis |
-| POST | `/api/repository/readme` | README health report and before/after suggestion |
-| POST | `/api/repository/health` | Repository health, dependencies and security-policy checks |
-| POST | `/api/repository/xray` | Static architecture/onboarding analysis |
-| POST | `/api/repository/pr-guard` | Deterministic pull-request change-impact report |
-| POST | `/api/repository/docs-generate` | Generate CONTRIBUTING / CODE_OF_CONDUCT / SECURITY docs |
-| GET | `/api/programs` | Verified program registry with filters |
-| POST | `/api/ai/complete` | Optional LLM helper (503 when unconfigured) |
-| POST | `/api/reports/export` | Serialize an analysis payload to JSON/CSV/Markdown |
+| Shell | `index.html`, `style.css`, `assets/css/app.css` | Navigation, view sections, visual system, legacy markup preservation |
+| Browser logic | `assets/js/app.js`, `api.js`, `ui.js`, `views/*.js` | Routing, mounting, API access, rendering with DOM APIs |
+| Legacy logic | `script.js` | Preserved analyzer, charts, heatmap, theme |
+| HTTP | `backend/app/main.py` | ASGI app, middleware, exception handlers, static routes |
+| Core | `backend/app/core/` | Settings, TTL cache, validators, structured errors |
+| Routers | `backend/app/routers/` | Request parsing, orchestration, response shaping |
+| Services | `backend/app/services/` | GitHub gateway and deterministic analysis engines |
 
-## Data model
+---
 
-There is no database in the first implementation. This is intentional: the platform needs no user
-accounts to provide value, and it avoids storing GitHub profile data or secrets. Bookmarks, local
-collaboration listings, themes and notification preferences live in browser `localStorage` and are
-labelled as local data. The normalized PostgreSQL schema for a future authenticated deployment is
-documented in `docs/architecture/DATABASE_ARCHITECTURE.md` and is not claimed as implemented.
+## 3. Backend component map
 
-## Caching and rate limits
+```mermaid
+flowchart TD
+    subgraph Core["core"]
+        CFG["config.py"]
+        CACHE["cache.py<br/>TTLCache"]
+        VAL["validation.py"]
+        ERR["errors.py"]
+    end
 
-- A bounded in-memory TTL cache keyed by request path + normalized query string avoids repeat GitHub
-  calls. Default TTL: 15 minutes for repository/profile data, 5 minutes for search results.
-- All GitHub calls go through one client that reads `X-RateLimit-Remaining`, maps 403/429 to a clear
-  API error, and supports an optional server-side token.
-- Request timeouts are enforced with `httpx`.
+    subgraph Gateways["Gateway"]
+        GH["github.py<br/>httpx · auth · rate limits"]
+    end
 
-## Frontend navigation map
+    subgraph Intelligence["Intelligence"]
+        DEV["developer.py"]
+        SCORE["scoring.py"]
+        ISS["issue_match.py"]
+    end
 
-| Sidebar item | View | Data source |
+    subgraph RepoTools["Repository lab"]
+        READ["readme.py"]
+        HEALTH["repo_health.py"]
+        CODE["codebase.py"]
+        PR["pr_guard.py"]
+        DOC["docs.py"]
+    end
+
+    subgraph Other["Other"]
+        PROG["programs.py"]
+        AI["ai.py"]
+        RPT["reports.py"]
+    end
+
+    GH --> DEV --> SCORE
+    GH --> ISS
+    GH --> READ
+    GH --> HEALTH
+    GH --> CODE
+    GH --> PR
+    GH --> DOC
+    PROG --> CACHE
+    AI --> CFG
+    RPT --> VAL
+    GH --> CACHE
+```
+
+### Service responsibilities
+
+| Service | Input | Output | Deterministic? |
+| --- | --- | --- | --- |
+| `github.py` | Path + params | Raw GitHub JSON, mapped errors | Yes |
+| `developer.py` | Username | Profile, stats, languages, scores, timeline, up to 30 summarized repos | Yes |
+| `scoring.py` | Public metadata | Legacy 100-point score + five transparent score blocks | Yes |
+| `issue_match.py` | Skill map + issues | Fit score, difficulty, evidence, starting guide | Yes |
+| `readme.py` | README text + metadata | Findings, score, before/after Markdown | Yes |
+| `repo_health.py` | Bounded file set | Docs, legal, security, quality, activity findings | Yes |
+| `codebase.py` | Bounded source files | Extensions, entrypoints, routes, local imports, evidence lines | Yes |
+| `pr_guard.py` | PR diff metadata | Confirmed findings separated from hypotheses | Yes |
+| `docs.py` | Repository context | Four documentation drafts | Yes |
+| `programs.py` | Static registry + filters | Eight verified program records | Yes |
+| `ai.py` | Prompt + context | Provider text, usage, disclaimer | No — optional |
+| `reports.py` | Caller payload | JSON, flattened CSV or Markdown | Yes |
+
+---
+
+## 4. API contract
+
+All functional routes are under `/api`. Interactive documentation is intentionally under the same prefix so it cannot collide with the repository's physical `docs/` directory.
+
+| Group | Endpoints | Count |
 | --- | --- | --- |
-| Overview | Landing + quick analysis entry | local state / legacy analyzer |
-| Developer Intelligence | Preserved legacy analyzer + new score cards | legacy GitHub REST + backend enrichment |
-| Open Source Explorer | Repository search, filters, bookmarks | `/api/repos/search` |
-| Find Contributions | Issue discovery and skill matching | `/api/issues/search`, `/api/issues/match` |
-| Issue Intelligence | Issue complexity and triage detail | `/api/issues/...` |
-| Repository Doctor | README doctor + repo health | `/api/repository/readme`, `/api/repository/health` |
-| Codebase X-Ray | Static structure analysis and Q&A evidence | `/api/repository/xray` |
-| Pull Request Guardian | PR change impact | `/api/repository/pr-guard` |
-| Open Source Programs | Verified registry, filters, reminders | `/api/programs` |
-| Developer Community | Developer discovery from GitHub search | `/api/repos/search` + GitHub user search proxy |
-| Collaboration Hub | Local listings and peer-review requests | `localStorage` |
-| Developer Roadmap | Evidence-based skill gaps and roadmap | `/api/profile/{username}` |
-| AI Developer Lab | Optional AI tools with integration status | `/api/ai/complete` |
-| Reports & Analytics | Exports and saved items | client-side export + `/api/reports/export` |
-| Settings | API base, tokens guidance, theme, data management | local settings |
+| System | `GET /api/health`, `GET /api/cache`, `DELETE /api/cache` | 3 |
+| Profile | `GET /api/profile/{username}` | 1 |
+| Discovery | `GET /api/repos/search`, `GET /api/repos/rescue`, `GET /api/repos/{owner}/{repo}`, `GET /api/developers/search` | 4 |
+| Issues | `GET /api/issues/search`, `GET /api/issues/{owner}/{repo}/{number}`, `POST /api/issues/match` | 3 |
+| Programs | `GET /api/programs` | 1 |
+| Repository Lab | `POST /api/repository/{readme,health,xray,pr-guard,docs-generate}` | 5 |
+| AI | `GET /api/ai/status`, `POST /api/ai/complete` | 2 |
+| Reports | `POST /api/reports/export` | 1 |
+| Docs/static | `/api/docs`, `/api/redoc`, `/api/openapi.json`, `/`, `/style.css`, `/script.js`, `/assets/*`, `/docs-static/*` | platform |
 
-## Security boundaries
+Full parameter and response details: [`../product/API_REFERENCE.md`](../product/API_REFERENCE.md).
 
-1. Repo URL parsing accepts only `github.com/owner/repo` forms; other hosts are rejected (SSRF guard).
-2. Markdown is rendered as escaped text or sanitized HTML generated by the backend, never as raw
-   untrusted HTML.
-3. External links use `rel="noopener noreferrer"`.
-4. Secrets are read from environment variables by the backend only.
-5. Write actions to GitHub require an explicit user click, a separate OAuth token supplied at runtime,
-   and a confirmation step; no write endpoint is enabled by default.
+---
+
+## 5. View-to-API map
+
+```mermaid
+flowchart LR
+    OV["01 Overview"] --> H["/api/health"]
+    OV --> P["/api/programs"]
+    EX["02 Explore"] --> RS["/api/repos/search"]
+    CO["03 Contributions"] --> IM["/api/issues/match"]
+    PR["04 Programs"] --> P
+    DV["05 Developer DNA"] --> PF["/api/profile/{username}"]
+    RL["06 Repository Lab"] --> RT["/api/repository/*"]
+    AI["07 AI Lab"] --> AS["/api/ai/status"]
+    AI --> AC["/api/ai/complete"]
+    CB["08 Collab Hub"] --> LS["localStorage"]
+    PA["09 Profile Analyzer"] --> GH["api.github.com"]
+```
+
+| View | Mount behavior | Data source |
+| --- | --- | --- |
+| Overview | Mounted once | Health + program count |
+| Explore | Form submit | Repository search with `perPage=12` |
+| Contributions | Form submit | Issue match with default limit 8 |
+| Programs | Mount, refresh, debounced filters | Program registry |
+| Developer DNA | Form submit | Developer intelligence |
+| Repository Lab | Form submit / tool buttons | Five repository endpoints |
+| AI Lab | Mount + submit | AI status and completion |
+| Collab Hub | Form submit / remove | Browser storage only |
+| Profile Analyzer | Legacy script | Public GitHub API and third-party heatmap images |
+
+API-only endpoints have no sidebar view: cache inspection, repository rescue, direct repository detail, developer search, issue search and issue detail.
+
+---
+
+## 6. Core data flows
+
+### Discovery
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant V as Explore view
+    participant B as FastAPI router
+    participant G as GitHubClient
+    participant C as TTLCache
+    participant H as GitHub
+
+    U->>V: keywords + filters
+    V->>B: GET /api/repos/search
+    B->>B: clamp q, validate page/perPage, whitelist sort
+    B->>G: search_repositories(query)
+    G->>C: get(cache key)
+    alt hit
+        C-->>G: cached payload
+    else miss
+        G->>H: GET /search/repositories
+        H-->>G: items + rate-limit headers
+        G->>C: set(key, payload, 300s)
+    end
+    G-->>B: items
+    B->>B: map activityLevel, indicators, topics, contributionAvailable
+    B-->>V: normalized results + catalogs
+```
+
+### Contribution matching
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant M as Match view
+    participant R as issues router
+    participant S as issue_match service
+    participant G as GitHubClient
+    participant H as GitHub
+
+    U->>M: username + optional technologies
+    M->>R: POST /api/issues/match
+    R->>G: user + repos + languages
+    G-->>R: public skill evidence
+    R->>G: search issues (180s cache)
+    G->>H: issue search
+    H-->>G: candidates
+    loop each candidate, bounded
+        R->>G: get_issue(cache=False)
+        G->>H: fresh issue detail
+        H-->>G: current state
+        alt closed, assigned or PR
+            R->>R: skip
+        else open issue
+            R->>S: score fit + complexity
+        end
+    end
+    R-->>M: matches, skipped counts, evidence, disclaimer
+```
+
+### Repository Lab
+
+```mermaid
+flowchart TD
+    IN["owner/repo or GitHub URL"] --> VAL["parse_repo<br/>host + traversal guard"]
+    VAL --> META["fetch repository metadata"]
+    META --> TREE["default-branch tree, else HEAD"]
+    TREE --> FILTER["blob ≤200,000 bytes"]
+    FILTER --> RANK["rank manifests → source → short paths"]
+    RANK --> TOOL{"selected tool"}
+    TOOL --> RDM["README Doctor"]
+    TOOL --> HLTH["Health check (≤12 files)"]
+    TOOL --> XRAY["X-Ray (≤24 files)"]
+    TOOL --> PRG["PR Guardian"]
+    TOOL --> DOC["Docs draft (≤20 files)"]
+    RDM --> OUT["findings + drafts + limitations"]
+    HLTH --> OUT
+    XRAY --> OUT
+    PRG --> OUT
+    DOC --> OUT
+```
+
+---
+
+## 7. Caching and rate limits
+
+```mermaid
+flowchart LR
+    REQ["GET request"] --> KEY["key = github:{path}:{sorted params}"]
+    KEY --> LOOK{"TTLCache.get()"}
+    LOOK -->|hit| RET["return cached JSON"]
+    LOOK -->|miss| HTTP["httpx call"]
+    HTTP --> RH{"GitHub response"}
+    RH -->|"200"| STORE["set with TTL"]
+    RH -->|"403/429 remaining=0"| E429["HTTP 429 upstream_error"]
+    RH -->|"404"| E404["HTTP 404 not_found"]
+    RH -->|"≥500 or invalid JSON"| E502["HTTP 502 upstream_error"]
+    STORE --> RET
+```
+
+| Operation class | TTL |
+| --- | --- |
+| Profile, repository, language, tree, contents, README, PR | 900s default |
+| Repository search, user search | 300s |
+| Issue search | 180s |
+| Issue detail used for revalidation | no cache |
+| Rate-limit endpoint | no cache |
+
+Cache properties:
+
+- Bounded by `CACHE_MAX_ENTRIES` (default 300).
+- Thread-safe with lazy expiry and monotonic time.
+- Evicts stale entries first, then insertion-order entries.
+- Process-local: Vercel instances do not share cache state.
+- `GET /api/cache` reports `entries`, `maxEntries`, `hits`, `misses`, `ttlSeconds`.
+
+---
+
+## 8. Error model
+
+```mermaid
+flowchart TD
+    E["Exception"] --> T{"type"}
+    T -->|AppError| A["status + structured error object"]
+    T -->|RequestValidationError| V["422 invalid_request + detail"]
+    T -->|unexpected| U["500 internal_error<br/>details logged only"]
+    A --> C["Browser api.js extracts error.message"]
+    V --> C
+    U --> C
+```
+
+Standard shape:
+
+```json
+{
+  "error": {
+    "code": "upstream_error",
+    "message": "GitHub rate limit exhausted.",
+    "detail": { "rateLimitRemaining": 0, "rateLimitReset": "..." }
+  }
+}
+```
+
+Two endpoints intentionally return an in-body `error` object with HTTP 200: invalid program status, and a PR number passed to the issue-detail route. Clients must check both `response.ok` and `data.error`.
+
+---
+
+## 9. Design principles
+
+1. **No fabricated data.** Live data is fetched; registry data is source-linked; missing values stay `null`.
+2. **Deterministic first.** Every core tool works without AI. AI is an optional enhancement, never a fact source.
+3. **Secrets stay server-side.** Only boolean integration status reaches the browser.
+4. **Repository content is data.** No execution, no shell calls, bounded file count and size.
+5. **Graceful degradation.** The legacy analyzer still works against public GitHub if the backend is unavailable; workspace views show setup guidance instead of fake content.
+6. **Honest labels.** Scores are heuristics, activity is inferred from push dates, and "rescue" results never claim a project is abandoned.
+
+---
+
+## 10. Non-goals for this release
+
+| Non-goal | Current substitute |
+| --- | --- |
+| Persistent accounts and database | GitHub source of truth + process-local cache |
+| OAuth and GitHub writes | Read-only endpoints; `writeAction.enabled: false` |
+| Redis / shared cache | Bounded in-memory TTLCache |
+| Background jobs | Synchronous bounded analysis |
+| Real-time notifications | Not implemented |
+| PDF generation | Browser print dialog |
+| Full static-analysis engine | Representative file sampling with explicit limits |
+
+Deployment mechanics are documented in [`../operations/DEPLOYMENT.md`](../operations/DEPLOYMENT.md); browser internals in [`frontend-architecture.md`](frontend-architecture.md).

@@ -1,16 +1,47 @@
 {
-  "builds": [
-    { "src": "api/index.py", "use": "@vercel/python" },
-    { "src": "index.html", "use": "@vercel/static" },
-    { "src": "style.css", "use": "@vercel/static" },
-    { "src": "script.js", "use": "@vercel/static" },
-    { "src": "assets/**", "use": "@vercel/static" }
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 30,
+      "includeFiles": "backend/**/*.py"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index.py" },
+    { "source": "/docs-static/:path*", "destination": "/api/index.py" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "api/index.py" },
-    { "src": "/assets/(.*)", "dest": "/assets/$1" },
-    { "src": "/style.css", "dest": "/style.css" },
-    { "src": "/script.js", "dest": "/script.js" },
-    { "src": "/(.*)", "dest": "api/index.py" }
+  "headers": [
+    {
+      "source": "/assets/:path*",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }
+      ]
+    },
+    {
+      "source": "/style.css",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }
+      ]
+    },
+    {
+      "source": "/script.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/api/:path*",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
   ]
 }
